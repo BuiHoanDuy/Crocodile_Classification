@@ -1,0 +1,27 @@
+{
+  "model_type": "J-48 (Decision Tree)",
+  "criterion": "entropy",
+  "train_samples": 800,
+  "test_samples": 200,
+  "accuracy": 0.975,
+  "accuracy_percent": 97.5,
+  "precision_weighted": 0.9756060606060606,
+  "recall_weighted": 0.975,
+  "f1_weighted": 0.975159420289855,
+  "target_classes": [
+    "Critically Endangered",
+    "Data Deficient",
+    "Endangered",
+    "Least Concern",
+    "Vulnerable"
+  ],
+  "feature_columns": [
+    "Observed Length (m)",
+    "Observed Weight (kg)",
+    "Age Class",
+    "Sex",
+    "Country/Region",
+    "Habitat Type",
+    "Continent"
+  ]
+}

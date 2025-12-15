@@ -1,0 +1,29 @@
+{
+  "feature_columns": [
+    "Observed Length (m)",
+    "Observed Weight (kg)",
+    "Age Class",
+    "Sex",
+    "Country/Region",
+    "Habitat Type",
+    "Continent"
+  ],
+  "target_classes": [
+    "Critically Endangered",
+    "Data Deficient",
+    "Endangered",
+    "Least Concern",
+    "Vulnerable"
+  ],
+  "age_mapping": {
+    "Hatchling": 0,
+    "Juvenile": 1,
+    "Subadult": 2,
+    "Adult": 3
+  },
+  "accuracy": 0.975,
+  "n_samples_train": 800,
+  "n_samples_test": 200,
+  "model_type": "J-48 (Decision Tree)",
+  "criterion": "entropy"
+}

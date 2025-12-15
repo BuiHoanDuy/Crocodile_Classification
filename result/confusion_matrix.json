@@ -1,0 +1,50 @@
+{
+  "confusion_matrix": [
+    [
+      54,
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      21,
+      2,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      10,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      77,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      0,
+      33
+    ]
+  ],
+  "classes": [
+    "Critically Endangered",
+    "Data Deficient",
+    "Endangered",
+    "Least Concern",
+    "Vulnerable"
+  ],
+  "accuracy": 0.975,
+  "precision_weighted": 0.9756060606060606,
+  "recall_weighted": 0.975,
+  "f1_weighted": 0.975159420289855
+}

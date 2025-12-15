@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cá sấu Bảo tồn - Dự đoán</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22c55e;
+      --accent-2: #38bdf8;
+      --border: #1f2937;
+      --error: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(34,197,94,0.08), transparent 25%),
+                  radial-gradient(circle at 80% 0%, rgba(56,189,248,0.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 16px 56px;
+    }
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 0.2px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: rgba(34,197,94,0.12);
+      color: #bbf7d0;
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+    @media (min-width: 900px) {
+      .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .hint { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 12px;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: border 0.15s, box-shadow 0.15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.15);
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    button {
+      padding: 12px 16px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      color: #0b1220;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), #16a34a);
+      box-shadow: 0 10px 30px rgba(34,197,94,0.3);
+    }
+    button.secondary {
+      background: rgba(56,189,248,0.12);
+      color: #e0f2fe;
+      border-color: rgba(56,189,248,0.35);
+    }
+    button:active { transform: translateY(1px); }
+    .status {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.8);
+    }
+    .status.success { border-color: rgba(34,197,94,0.4); color: #bbf7d0; }
+    .status.error { border-color: rgba(239,68,68,0.4); color: #fecaca; }
+    .result {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: linear-gradient(120deg, rgba(34,197,94,0.08), rgba(56,189,248,0.08));
+    }
+    .result-title { font-weight: 800; font-size: 18px; margin-bottom: 8px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: rgba(56,189,248,0.12);
+      color: #e0f2fe;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-right: 8px;
+    }
+    .meta { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    footer {
+      margin-top: 32px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+    .loading { animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        🐊 Cá sấu Bảo tồn
+        <span class="badge">Giao diện dự đoán</span>
+      </div>
+      <div class="meta">API: <code>/predict</code> • Docs: <code>/docs</code></div>
+    </header>
+
+    <div class="card">
+      <div class="grid grid-2">
+        <div>
+          <label for="observed_length">Chiều dài (m)</label>
+          <input type="number" step="0.1" min="0.1" max="10" id="observed_length" value="3.5" required />
+          <div class="hint">0.1 - 10.0</div>
+        </div>
+        <div>
+          <label for="observed_weight">Cân nặng (kg)</label>
+          <input type="number" step="0.1" min="0.1" max="2000" id="observed_weight" value="250" required />
+          <div class="hint">0.1 - 2000.0</div>
+        </div>
+        <div>
+          <label for="age_class">Nhóm tuổi</label>
+          <select id="age_class">
+            <option value="Hatchling">Mới nở (Hatchling)</option>
+            <option value="Juvenile">Non trẻ (Juvenile)</option>
+            <option value="Subadult">Gần trưởng thành (Subadult)</option>
+            <option value="Adult" selected>Trưởng thành (Adult)</option>
+          </select>
+        </div>
+        <div>
+          <label for="sex">Giới tính</label>
+          <select id="sex">
+            <option value="Male">Đực (Male)</option>
+            <option value="Female">Cái (Female)</option>
+          </select>
+        </div>
+        <div>
+          <label for="continent">Khu vực</label>
+          <select id="continent">
+            <option value="all">Tất cả (All)</option>
+            <option value="Oceania">Châu Đại Dương (Oceania)</option>
+            <option value="Southeast Asia" selected>Đông Nam Á (Southeast Asia)</option>
+            <option value="South Asia">Nam Á (South Asia)</option>
+            <option value="Western Asia">Tây Á (Western Asia)</option>
+            <option value="West Africa">Tây Phi (West Africa)</option>
+            <option value="Central Africa">Trung Phi (Central Africa)</option>
+            <option value="East Africa">Đông Phi (East Africa)</option>
+            <option value="Northern Africa">Bắc Phi (Northern Africa)</option>
+            <option value="North America">Bắc Mỹ (North America)</option>
+            <option value="South America">Nam Mỹ (South America)</option>
+          </select>
+          <div class="hint">Chọn khu vực để lọc danh sách quốc gia. Chọn "Tất cả" để xem tất cả quốc gia.</div>
+        </div>
+        <div>
+          <label for="habitat_type">Loại môi trường sống</label>
+          <select id="habitat_type">
+            <option value="Rivers" selected>Sông (Rivers)</option>
+            <option value="Lakes">Hồ (Lakes)</option>
+            <option value="Swamps">Đầm lầy (Swamps)</option>
+            <option value="Wetlands">Đất ngập nước (Wetlands)</option>
+            <option value="Estuaries">Cửa sông (Estuaries)</option>
+            <option value="Mangroves">Rừng ngập mặn (Mangroves)</option>
+            <option value="Marshes">Đầm lầy thấp (Marshes)</option>
+            <option value="Ponds">Ao (Ponds)</option>
+            <option value="Coastal">Ven biển (Coastal)</option>
+            <option value="Delta">Châu thổ (Delta)</option>
+            <option value="Reservoirs">Hồ chứa (Reservoirs)</option>
+            <option value="Other">Khác (Other)</option>
+          </select>
+        </div>
+        <div>
+          <label for="country_region">Quốc gia</label>
+          <select id="country_region"></select>
+          <div class="hint">Chọn từ danh sách quốc gia/khu vực có sẵn.</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="predictBtn">Dự đoán</button>
+        <button class="secondary" id="resetBtn" type="button">Xóa / Reset</button>
+      </div>
+
+      <div id="status" class="status" style="display:none;"></div>
+      <div id="result" class="result" style="display:none;">
+        <div class="result-title">Kết quả dự đoán</div>
+        <div id="resultContent"></div>
+      </div>
+    </div>
+
+    <footer>
+    Bùi Hoàn Duy - Nguyễn Tuấn Kiệt - Võ Minh Thắng - Nguyễn Bình Tiến.
+    </footer>
+  </div>
+
+  <script>
+    const API_PREDICT = "/predict";
+    const statusBox = document.getElementById("status");
+    const resultBox = document.getElementById("result");
+    const resultContent = document.getElementById("resultContent");
+    const predictBtn = document.getElementById("predictBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    // Danh sách quốc gia/khu vực và mapping khu vực
+    const COUNTRY_TO_CONTINENT = {
+      // Southeast Asia
+      "Vietnam": "Southeast Asia",
+      "Thailand": "Southeast Asia",
+      "Cambodia": "Southeast Asia",
+      "Laos": "Southeast Asia",
+      "Malaysia": "Southeast Asia",
+      "Malaysia (Borneo)": "Southeast Asia",
+      "Indonesia": "Southeast Asia",
+      "Indonesia (Borneo)": "Southeast Asia",
+      "Indonesia (Papua)": "Southeast Asia",
+      "Philippines": "Southeast Asia",
+
+      // South Asia
+      "India": "South Asia",
+      "Sri Lanka": "South Asia",
+      "Pakistan": "South Asia",
+      "Nepal": "South Asia",
+
+      // Western Asia
+      "Iran (historic)": "Western Asia",
+
+      // Oceania
+      "Australia": "Oceania",
+      "Papua New Guinea": "Oceania",
+
+      // West Africa
+      "Ghana": "West Africa",
+      "Nigeria": "West Africa",
+      "Liberia": "West Africa",
+      "Sierra Leone": "West Africa",
+      "Senegal": "West Africa",
+      "Niger": "West Africa",
+      "Guinea": "West Africa",
+      "Mali": "West Africa",
+      "Côte d'Ivoire": "West Africa",
+      "Mauritania": "West Africa",
+
+      // Central Africa
+      "Cameroon": "Central Africa",
+      "Congo (DRC)": "Central Africa",
+      "Congo Basin Countries": "Central Africa",
+      "Gabon": "Central Africa",
+      "Central African Republic": "Central Africa",
+      "Chad": "Central Africa",
+
+      // East Africa
+      "Kenya": "East Africa",
+      "Uganda": "East Africa",
+      "Tanzania": "East Africa",
+      "Sudan": "East Africa",
+      "South Africa": "East Africa",
+
+      // Northern Africa
+      "Egypt": "Northern Africa",
+
+      // North America
+      "USA (Florida)": "North America",
+      "Mexico": "North America",
+      "Costa Rica": "North America",
+      "Guatemala": "North America",
+      "Belize": "North America",
+      "Cuba": "North America",
+
+      // South America
+      "Colombia": "South America",
+      "Venezuela": "South America",
+    };
+
+    const COUNTRY_LIST = Object.keys(COUNTRY_TO_CONTINENT);
+
+    // Mapping continent -> default country (quốc gia đầu tiên trong mỗi khu vực)
+    const CONTINENT_TO_DEFAULT_COUNTRY = {
+      "Southeast Asia": "Vietnam",
+      "South Asia": "India",
+      "Western Asia": "Iran (historic)",
+      "Oceania": "Australia",
+      "West Africa": "Ghana",
+      "Central Africa": "Cameroon",
+      "East Africa": "Kenya",
+      "Northern Africa": "Egypt",
+      "North America": "USA (Florida)",
+      "South America": "Colombia",
+    };
+
+    const fields = [
+      "observed_length",
+      "observed_weight",
+      "age_class",
+      "sex",
+      "habitat_type",
+      "country_region",
+      "continent",
+    ];
+
+    function populateCountrySelect() {
+      const select = document.getElementById("country_region");
+      select.innerHTML = ""; // Clear first
+
+      COUNTRY_LIST.sort().forEach((c) => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        select.appendChild(opt);
+      });
+    }
+
+    function filterCountriesByContinent(continent) {
+      const select = document.getElementById("country_region");
+      const currentValue = select.value;
+      
+      // Nếu chọn "Tất cả", hiển thị tất cả quốc gia
+      let countriesInContinent;
+      if (continent === "all") {
+        countriesInContinent = COUNTRY_LIST;
+      } else {
+        // Lọc các quốc gia thuộc continent
+        countriesInContinent = COUNTRY_LIST.filter(
+          (c) => COUNTRY_TO_CONTINENT[c] === continent
+        );
+      }
+      
+      // Cập nhật options
+      select.innerHTML = "";
+      
+      countriesInContinent.sort().forEach((c) => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        select.appendChild(opt);
+      });
+      
+      // Tự động chọn quốc gia mặc định của khu vực (chỉ khi không phải "Tất cả")
+      if (continent !== "all") {
+        const defaultCountry = CONTINENT_TO_DEFAULT_COUNTRY[continent];
+        if (defaultCountry && countriesInContinent.includes(defaultCountry)) {
+          select.value = defaultCountry;
+        } else if (countriesInContinent.length > 0) {
+          // Nếu không có default, chọn quốc gia đầu tiên
+          select.value = countriesInContinent.sort()[0];
+        }
+      }
+    }
+
+    function updateContinentByCountry() {
+      const country = document.getElementById("country_region").value;
+      const mapped = COUNTRY_TO_CONTINENT[country];
+      // Tự động cập nhật continent khi chọn quốc gia (trừ khi đang ở chế độ "Tất cả")
+      if (mapped) {
+        const continentSelect = document.getElementById("continent");
+        // Nếu đang ở "all", tự động chuyển sang continent của quốc gia đã chọn
+        if (continentSelect.value === "all" && country) {
+          continentSelect.value = mapped;
+          // Cập nhật lại danh sách quốc gia theo continent mới
+          filterCountriesByContinent(mapped);
+        } else if (continentSelect.value !== "all") {
+          // Nếu không phải "all", chỉ cập nhật giá trị
+          continentSelect.value = mapped;
+        }
+      }
+    }
+
+    function getPayload() {
+      const countryValue = document.getElementById("country_region").value;
+      let continentValue = document.getElementById("continent").value;
+      
+      // Nếu chọn "Tất cả" (all), lấy continent từ quốc gia đã chọn
+      if (continentValue === "all") {
+        if (countryValue && COUNTRY_TO_CONTINENT[countryValue]) {
+          continentValue = COUNTRY_TO_CONTINENT[countryValue];
+        } else {
+          // Nếu không có quốc gia, không thể xác định continent
+          continentValue = null;
+        }
+      }
+      
+      // Nếu không có country nhưng có continent, tự động map country mặc định
+      let finalCountry = countryValue;
+      if (!finalCountry && continentValue && continentValue !== "all") {
+        finalCountry = CONTINENT_TO_DEFAULT_COUNTRY[continentValue] || null;
+      }
+      
+      return {
+        observed_length: parseFloat(document.getElementById("observed_length").value),
+        observed_weight: parseFloat(document.getElementById("observed_weight").value),
+        age_class: document.getElementById("age_class").value,
+        sex: document.getElementById("sex").value,
+        habitat_type: document.getElementById("habitat_type").value,
+        country_region: finalCountry || null,
+        continent: continentValue || null,
+      };
+    }
+
+    function setStatus(message, type = "info") {
+      statusBox.style.display = "block";
+      statusBox.textContent = message;
+      statusBox.className = `status ${type === "error" ? "error" : "success"}`;
+    }
+
+    function clearStatus() {
+      statusBox.style.display = "none";
+      statusBox.textContent = "";
+    }
+
+    function showResult(data) {
+      resultBox.style.display = "block";
+      const { predicted_status, tinh_trang_tieng_viet, confidence_percent, input_summary } = data;
+      resultContent.innerHTML = `
+        <div class="pill">Nhãn: ${predicted_status}</div>
+        <div class="pill">Tiếng Việt: ${tinh_trang_tieng_viet}</div>
+        <div class="pill">Độ tin cậy: ${confidence_percent}%</div>
+      `;
+    }
+
+    function clearResult() {
+      resultBox.style.display = "none";
+      resultContent.innerHTML = "";
+    }
+
+    async function handlePredict() {
+      clearStatus();
+      clearResult();
+
+      // basic guard
+      for (const id of ["observed_length", "observed_weight"]) {
+        const value = Number(document.getElementById(id).value);
+        if (Number.isNaN(value) || value <= 0) {
+          setStatus("Vui lòng nhập giá trị hợp lệ cho chiều dài/cân nặng.", "error");
+          return;
+        }
+      }
+
+      predictBtn.disabled = true;
+      predictBtn.textContent = "Đang dự đoán...";
+      setStatus("Đang gửi yêu cầu đến API...", "success");
+
+      try {
+        const payload = getPayload();
+        const res = await fetch(API_PREDICT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const contentType = res.headers.get("content-type") || "";
+        const data = contentType.includes("application/json") ? await res.json() : {};
+
+        if (!res.ok) {
+          const detail = data?.detail || `HTTP ${res.status}`;
+          throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+        }
+
+        setStatus("Dự đoán thành công!", "success");
+        showResult(data);
+      } catch (err) {
+        setStatus(`Lỗi: ${err.message || err}`, "error");
+      } finally {
+        predictBtn.disabled = false;
+        predictBtn.textContent = "Dự đoán";
+      }
+    }
+
+    function handleReset() {
+      fields.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el.tagName === "INPUT") el.value = el.defaultValue || "";
+        if (el.tagName === "SELECT") el.selectedIndex = 0;
+      });
+      clearStatus();
+      clearResult();
+    }
+
+    document.getElementById("country_region").addEventListener("change", () => {
+      updateContinentByCountry();
+    });
+
+    document.getElementById("continent").addEventListener("change", () => {
+      // Khi đổi khu vực, tự động filter và chọn quốc gia mặc định thuộc khu vực đó
+      const continent = document.getElementById("continent").value;
+      filterCountriesByContinent(continent);
+    });
+
+    predictBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      handlePredict();
+    });
+
+    resetBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      handleReset();
+    });
+
+    // init
+    const initialContinent = document.getElementById("continent").value;
+    filterCountriesByContinent(initialContinent);
+  </script>
+</body>
+</html>
+

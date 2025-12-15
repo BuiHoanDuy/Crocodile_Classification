@@ -1,0 +1,44 @@
+============================================================
+CLASSIFICATION REPORT
+============================================================
+
+Model: J-48 (Decision Tree)
+Criterion: entropy
+Train samples: 800
+Test samples: 200
+
+============================================================
+METRICS SUMMARY
+============================================================
+Accuracy: 0.9750 (97.50%)
+Precision (weighted): 0.9756
+Recall (weighted): 0.9750
+F1-Score (weighted): 0.9752
+
+============================================================
+DETAILED CLASSIFICATION REPORT
+============================================================
+
+                       precision    recall  f1-score   support
+
+Critically Endangered       0.98      0.98      0.98        55
+       Data Deficient       0.95      0.91      0.93        23
+           Endangered       0.83      0.91      0.87        11
+        Least Concern       1.00      1.00      1.00        77
+           Vulnerable       0.97      0.97      0.97        34
+
+             accuracy                           0.97       200
+            macro avg       0.95      0.95      0.95       200
+         weighted avg       0.98      0.97      0.98       200
+
+============================================================
+CONFUSION MATRIX
+============================================================
+
+Classes: Critically Endangered, Data Deficient, Endangered, Least Concern, Vulnerable
+
+[[54  0  0  0  1]
+ [ 0 21  2  0  0]
+ [ 0  1 10  0  0]
+ [ 0  0  0 77  0]
+ [ 1  0  0  0 33]]
